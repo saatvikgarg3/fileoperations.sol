@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract eVAULT {
+    mapping(address => string[][]) public user2files;
+    mapping(address => string[]) public folder_names;
+    mapping(string => string) public files_names;
+
+    function create_folder(string memory folder_name) public {
+        require(bytes(folder_name).length > 0, "Folder name must not be empty");
+        
+        string[] memory arr;
+        user2files[msg.sender].push(arr);
+        folder_names[msg.sender].push(folder_name);
+    }
+
+    function storeUploadedFile(uint256 folder_Num, string memory file_Name, string memory _CID) public {
+        require(folder_Num < user2files[msg.sender].length, "Invalid folder number");
+        require(bytes(file_Name).length > 0, "File name must not be empty");
+        require(bytes(_CID).length > 0, "CID must not be empty");
+        
+        user2files[msg.sender][folder_Num].push(_CID);
+        files_names[_CID] = file_Name;
+    }
+
+    function getFile(uint256 folder_Num, uint256 file_Num) public view returns (string memory) {
+        require(folder_Num < user2files[msg.sender].length, "Invalid folder number");
+        require(file_Num < user2files[msg.sender][folder_Num].length, "Invalid file number");
+        
+        return user2files[msg.sender][folder_Num][file_Num];
+    }
+
+    function getFileName(string memory CID) public view returns (string memory) {
+        require(bytes(files_names[CID]).length > 0, "File not found");
+        
+        return files_names[CID];
+    }
+
+    function getAllFolders() public view returns (string[] memory) {
+        return folder_names[msg.sender];
+    }
+
+    function getAllFiles(uint256 folder_num) public view returns (string[] memory) {
+        require(folder_num < user2files[msg.sender].length, "Invalid folder number");
+        
+        string[] memory output = new string[](user2files[msg.sender][folder_num].length);
+        for (uint i = 0; i < user2files[msg.sender][folder_num].length; i++) {
+            output[i] = files_names[user2files[msg.sender][folder_num][i]];
+        }
+        return output;
+    }
+
+    function get_total_folder_Num() public view returns (uint256) {
+        return user2files[msg.sender].length;
+    }
+
+    function get_total_files_Num(uint256 folder_num) public view returns (uint256) {
+        require(folder_num < user2files[msg.sender].length, "Invalid folder number");
+
+        return user2files[msg.sender][folder_num].length;
+    }
+}
